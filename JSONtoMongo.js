@@ -9,42 +9,34 @@ var fs = require('fs'),
     Listing = require('./ListingSchema.js'), 
     config = require('./config');
 
+var data = undefined;
+
 /* Connect to your database */
 mongoose.connect(config.db.uri);
-
-var listingData = fs.readFileSync('listings.json', 'utf8');
-listingData = JSON.parse(listingData);
 
 /* 
   Instantiate a mongoose model for each listing object in the JSON file, 
   and then save it to your Mongo database 
  */
-for(var i = 0; i < listingData.entries.length; i++) {
-  if(listingData.entries[i].coordinates !== undefined) {
-    var temp = new Listing({
-      code : listingData.entries[i].code,
-      name : listingData.entries[i].name,
-      coordinates : {
-        latitude : listingData.entries[i].coordinates.latitude,
-        longitude : listingData.entries[i].coordinates.longitude
-      },
-      address : listingData.entries[i].address
-    });
+
+ fs.readFile('listings.json', 'utf8', function(err, data){
+  if(err){
+    throw err;
   }
-  else {
-    var temp = new Listing({
-      code : listingData.entries[i].code,
-      name : listingData.entries[i].name
+
+  data = JSON.parse(data).entries;
+  data.forEach(function(entry){
+    var newList = new Listing(entry);
+
+    newList.save(function(err){
+      if(err) throw err;
+
     });
-  }
+  });
+ });
+
 
 /* 
   Once you've written + run the script, check out your MongoLab database to ensure that 
   it saved everything correctly. 
  */
-
-  temp.save( (err) => {
-    if(err) throw err;
-    console.log("Saved!");
-  });
-}

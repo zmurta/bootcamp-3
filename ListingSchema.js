@@ -20,7 +20,8 @@ listingSchema.pre('save', function(next) {
   var date = new Date();
   
   this.updated_at = date;
-  if(!this.created_at) this.created_at = date;
+  if(!this.created_at)
+    this.created_at = date;
   
   next();
 });
